@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>অর্থনীতি ১ম পত্র: উপযোগ ও ক্রমহ্রাসমান প্রান্তিক উপযোগ বিধি</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Chart.js CDN Link Updated to avoid Source Map 404 Error -->
+    <!-- Chart.js CDN Link Updated -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script> 
     <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -29,24 +29,24 @@
         .bg-primary-light { background-color: var(--primary-light); }
         .border-primary-color { border-color: var(--primary-color); }
 
+        /* The nav-active class now relies on CSS variables for color */
         .nav-active {
             border-bottom: 3px solid var(--primary-color);
-            color: var(--primary-color);
+            color: var(--primary-color) !important; /* !important to override text-stone-500 */
             font-weight: 600;
         }
         .table-scroll::-webkit-scrollbar { height: 6px; }
         .table-scroll::-webkit-scrollbar-track { background: #f1f1f1; }
         .table-scroll::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 4px; }
-        .slide-in { animation: slideIn 0.3s ease-out forwards; }
+        .slide-in { 
+            animation: slideIn 0.4s ease-out forwards; 
+            display: block !important;
+        }
         @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* Splash Screen Style for "5D Ad" */
+        /* Splash Screen Style */
         #splash-screen {
             background: linear-gradient(135deg, #1f2937 0%, #374151 100%);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
             z-index: 1000;
         }
         .ad-title {
@@ -62,7 +62,7 @@
             to { text-shadow: 0 0 10px rgba(129, 140, 248, 0.8), 0 0 20px rgba(59, 130, 246, 0.6); }
         }
 
-        /* Chart Container Styling per Requirements */
+        /* Chart Container Styling */
         .chart-container {
             position: relative;
             width: 100%;
@@ -81,8 +81,8 @@
 </head>
 <body class="flex flex-col min-h-screen">
 
-    <!-- SPLASH SCREEN (5D Ad Style) -->
-    <div id="splash-screen" class="fixed inset-0 text-white transition-opacity duration-700">
+    <!-- SPLASH SCREEN -->
+    <div id="splash-screen" class="fixed inset-0 text-white transition-opacity duration-700 flex flex-col items-center justify-center">
         <div class="text-center p-8">
             <p class="text-xl sm:text-2xl text-gray-300 mb-2">অর্থনীতি ক্লাসে স্বাগতম</p>
             <h1 class="ad-title mb-6">
@@ -91,7 +91,7 @@
             <p class="text-gray-400 mb-10 text-lg">
                 আপনার HSC অর্থনীতির গুরুত্বপূর্ণ ধারণাগুলো ইন্টারেক্টিভ ল্যাবে অনুভব করুন।
             </p>
-            <button onclick="startApp()" class="bg-primary-color hover:bg-primary-dark text-white font-extrabold py-4 px-12 rounded-full shadow-2xl transition-all duration-300 transform hover:scale-105 border-b-4 border-indigo-700">
+            <button id="start-button" class="bg-primary-color hover:bg-primary-dark text-white font-extrabold py-4 px-12 rounded-full shadow-2xl transition-all duration-300 transform hover:scale-105 border-b-4 border-indigo-700">
                 পড়া শুরু করুন ✨
             </button>
             <p class="text-xs text-gray-500 mt-6">
@@ -111,20 +111,21 @@
                         <span class="font-bold text-xl text-stone-800 hidden sm:block">অর্থনীতি পাঠশালা</span>
                     </div>
                     <div class="flex items-center space-x-2">
-                        <!-- Navigation Tabs -->
-                        <div class="flex space-x-4 sm:space-x-8 overflow-x-auto h-full">
-                            <button onclick="switchTab('concepts')" id="nav-concepts" class="nav-item nav-active inline-flex items-center px-1 pt-1 text-sm font-medium text-stone-900 hover:text-primary-color transition-colors whitespace-nowrap">
+                        <!-- Navigation Tabs - Added id="nav-container" for delegation -->
+                        <div id="nav-container" class="flex space-x-4 sm:space-x-8 overflow-x-auto h-full">
+                            <!-- Removed onclick. Added data-tab attribute for delegation. -->
+                            <button data-tab="concepts" id="nav-concepts" class="nav-tab-btn inline-flex items-center px-1 pt-1 text-sm font-medium text-stone-500 hover:text-primary-color transition-colors whitespace-nowrap">
                                 ধারণা ও সংজ্ঞা
                             </button>
-                            <button onclick="switchTab('simulation')" id="nav-simulation" class="nav-item inline-flex items-center px-1 pt-1 text-sm font-medium text-stone-500 hover:text-primary-color transition-colors whitespace-nowrap">
+                            <button data-tab="simulation" id="nav-simulation" class="nav-tab-btn inline-flex items-center px-1 pt-1 text-sm font-medium text-stone-500 hover:text-primary-color transition-colors whitespace-nowrap">
                                 সিমুলেশন ও গ্রাফ
                             </button>
-                            <button onclick="switchTab('analysis')" id="nav-analysis" class="nav-item inline-flex items-center px-1 pt-1 text-sm font-medium text-stone-500 hover:text-primary-color transition-colors whitespace-nowrap">
+                            <button data-tab="analysis" id="nav-analysis" class="nav-tab-btn inline-flex items-center px-1 pt-1 text-sm font-medium text-stone-500 hover:text-primary-color transition-colors whitespace-nowrap">
                                 অনুমান ও ব্যতিক্রম
                             </button>
                         </div>
                         <!-- Settings Button -->
-                        <button onclick="openSettings()" class="ml-4 p-2 bg-stone-100 hover:bg-primary-light text-stone-600 hover:text-primary-color rounded-full transition-colors shadow-inner">
+                        <button id="settings-button" class="ml-4 p-2 bg-stone-100 hover:bg-primary-light text-stone-600 hover:text-primary-color rounded-full transition-colors shadow-inner">
                             ⚙️ সেটআপ
                         </button>
                     </div>
@@ -144,7 +145,7 @@
             </header>
 
             <!-- VIEW: Concepts (Theory) -->
-            <div id="view-concepts" class="view-section slide-in">
+            <div id="view-concepts" class="view-section hidden">
                 <div class="bg-primary-light border-l-4 border-primary-color p-4 mb-8 rounded-r-lg shadow-sm">
                     <p class="text-primary-dark">
                         <strong>এই অংশের উদ্দেশ্য:</strong> এখানে আমরা উপযোগের মৌলিক সংজ্ঞা এবং গাণিতিক সূত্রগুলো জানব। সিমুলেশনে যাওয়ার আগে তাত্ত্বিক ভিত্তিটি মজবুত করা প্রয়োজন।
@@ -176,7 +177,7 @@
                             কোনো নির্দিষ্ট সময়ে একটি নির্দিষ্ট দ্রব্যের বিভিন্ন একক ভোগের ফলে প্রাপ্ত <strong>মোট সন্তুষ্টির</strong> সমষ্টি।
                         </p>
                         <div class="bg-primary-light p-3 rounded-lg font-mono text-primary-dark text-center text-sm sm:text-base border border-primary-color">
-                            TU = MU₁ + MU₂ + ... + MUₙ = ∑MU
+                            TU = MU₁ + MU₂ + ... + MUₙ = $\Sigma$MU
                         </div>
                     </div>
 
@@ -190,20 +191,20 @@
                             অতিরিক্ত <strong>এক একক ভোগ বৃদ্ধির ফলে</strong> মোট উপযোগের যে পরিবর্তন হয়। এটি হলো সর্বশেষ একক থেকে প্রাপ্ত তৃপ্তি।
                         </p>
                         <div class="bg-primary-light p-3 rounded-lg font-mono text-primary-dark text-center text-sm sm:text-base border border-primary-color">
-                            MU = ΔTU / ΔQ (মোট উপযোগের পরিবর্তন / ভোগের পরিবর্তন)
+                            MU = $\Delta$TU / $\Delta$Q (মোট উপযোগের পরিবর্তন / ভোগের পরিবর্তন)
                         </div>
                     </div>
                 </div>
 
                 <div class="mt-10 text-center">
-                    <button onclick="switchTab('simulation')" class="bg-primary-color hover:bg-primary-dark text-white font-bold py-3 px-8 rounded-full shadow-xl transition-transform transform hover:scale-105">
+                    <button id="go-to-simulation-btn" class="bg-primary-color hover:bg-primary-dark text-white font-bold py-3 px-8 rounded-full shadow-xl transition-transform transform hover:scale-105">
                         সিমুলেশন শুরু করুন 👉
                     </button>
                 </div>
             </div>
 
             <!-- VIEW: Simulation (Dashboard) -->
-            <div id="view-simulation" class="view-section hidden slide-in">
+            <div id="view-simulation" class="view-section hidden">
                 <div class="bg-green-50 border-l-4 border-green-600 p-4 mb-6 rounded-r-lg shadow-sm">
                     <p class="text-green-800">
                         <strong>ইন্টারেক্টিভ ল্যাব:</strong> নিচের 'আপেল ভোগ করুন' বোতামে ক্লিক করে বিধিটি পরীক্ষা করুন। লক্ষ্য করুন কীভাবে ভোগের সাথে সাথে প্রান্তিক উপযোগ (MU) কমে এবং মোট উপযোগ (TU) বাড়ে।
@@ -217,10 +218,10 @@
                         <div class="bg-white p-6 rounded-xl shadow-xl border border-stone-100">
                             <h3 class="text-lg font-semibold text-stone-700 mb-4">নিয়ন্ত্রণ প্যানেল</h3>
                             <div class="flex flex-col gap-3">
-                                <button id="btn-consume" onclick="consumeUnit()" class="w-full bg-primary-color hover:bg-primary-dark text-white font-bold py-3 px-4 rounded-lg shadow-lg transition-colors flex items-center justify-center gap-2 transform hover:scale-[1.02]">
+                                <button id="btn-consume" class="w-full bg-primary-color hover:bg-primary-dark text-white font-bold py-3 px-4 rounded-lg shadow-lg transition-colors flex items-center justify-center gap-2 transform hover:scale-[1.02]">
                                     <span>🍎</span> আপেল ভোগ করুন
                                 </button>
-                                <button onclick="resetSimulation()" class="w-full bg-stone-200 hover:bg-stone-300 text-stone-700 font-semibold py-2 px-4 rounded-lg transition-colors">
+                                <button id="btn-reset" class="w-full bg-stone-200 hover:bg-stone-300 text-stone-700 font-semibold py-2 px-4 rounded-lg transition-colors">
                                     রিসেট (Reset)
                                 </button>
                             </div>
@@ -259,8 +260,6 @@
                             <div class="chart-container">
                                 <canvas id="utilityChart"></canvas>
                             </div>
-                            <!-- Diagram for Diminishing Marginal Utility -->
-                            <!--  -->
                         </div>
 
                         <!-- Data Table -->
@@ -289,7 +288,7 @@
             </div>
 
             <!-- VIEW: Analysis (Assumptions & Exceptions) -->
-            <div id="view-analysis" class="view-section hidden slide-in">
+            <div id="view-analysis" class="view-section hidden">
                 <div class="bg-amber-50 border-l-4 border-amber-600 p-4 mb-8 rounded-r-lg shadow-sm">
                     <p class="text-amber-800">
                         <strong>বিশलेषण:</strong> এই বিধিটি সর্বদা কার্যকর হয় না। এর কিছু নির্দিষ্ট অনুমান এবং ব্যতিক্রম রয়েছে যা নিচে আলোচনা করা হলো।
@@ -375,13 +374,13 @@
             <div class="mb-6">
                 <label class="block text-sm font-medium text-stone-700 mb-2">১. মূল অ্যাকসেন্ট রঙ (Theme Color)</label>
                 <div class="flex space-x-4">
-                    <button onclick="setAccentColor('indigo')" class="w-10 h-10 bg-indigo-600 rounded-full shadow-md hover:ring-4 ring-offset-2 ring-indigo-300 transition-shadow" title="নীল">
+                    <button data-color="indigo" class="w-10 h-10 bg-indigo-600 rounded-full shadow-md hover:ring-4 ring-offset-2 ring-indigo-300 transition-shadow color-select-btn" title="নীল">
                         <span id="check-indigo" class="text-white text-lg font-bold">✓</span>
                     </button>
-                    <button onclick="setAccentColor('green')" class="w-10 h-10 bg-green-600 rounded-full shadow-md hover:ring-4 ring-offset-2 ring-green-300 transition-shadow" title="সবুজ">
+                    <button data-color="green" class="w-10 h-10 bg-green-600 rounded-full shadow-md hover:ring-4 ring-offset-2 ring-green-300 transition-shadow color-select-btn" title="সবুজ">
                         <span id="check-green" class="hidden text-white text-lg font-bold">✓</span>
                     </button>
-                    <button onclick="setAccentColor('red')" class="w-10 h-10 bg-rose-600 rounded-full shadow-md hover:ring-4 ring-offset-2 ring-rose-300 transition-shadow" title="লাল">
+                    <button data-color="red" class="w-10 h-10 bg-rose-600 rounded-full shadow-md hover:ring-4 ring-offset-2 ring-rose-300 transition-shadow color-select-btn" title="লাল">
                         <span id="check-red" class="hidden text-white text-lg font-bold">✓</span>
                     </button>
                 </div>
@@ -427,31 +426,21 @@
             red: { primary: '#ef4444', light: '#fef2f2', dark: '#991b1b' }
         };
 
-        function startApp() {
-            document.getElementById('splash-screen').style.opacity = '0';
-            setTimeout(() => {
-                document.getElementById('splash-screen').classList.add('hidden');
-                document.getElementById('main-content').classList.remove('hidden');
-            }, 700);
-            initChart();
-            chartInstance.data.labels.push(0);
-            chartInstance.data.datasets[0].data.push(0);
-            chartInstance.data.datasets[1].data.push(null);
-            chartInstance.update();
-        }
-
         function initChart() {
+            if (chartInstance) {
+                chartInstance.destroy(); 
+            }
             const ctx = document.getElementById('utilityChart').getContext('2d');
             
-            // Chart.js global object is Chart (from the updated cdn)
+            // Chart.js global object is Chart
             chartInstance = new Chart(ctx, {
                 type: 'line',
                 data: {
-                    labels: [],
+                    labels: [0],
                     datasets: [
                         {
                             label: 'মোট উপযোগ (TU)',
-                            data: [],
+                            data: [0],
                             borderColor: root.style.getPropertyValue('--primary-color') || colors.indigo.primary,
                             backgroundColor: 'rgba(79, 70, 229, 0.1)',
                             borderWidth: 3,
@@ -461,7 +450,7 @@
                         },
                         {
                             label: 'প্রান্তিক উপযোগ (MU)',
-                            data: [],
+                            data: [null],
                             borderColor: root.style.getPropertyValue('--mu-positive') || '#16a34a',
                             backgroundColor: root.style.getPropertyValue('--mu-positive') || '#16a34a',
                             borderWidth: 2,
@@ -504,41 +493,70 @@
             });
         }
 
+        // --- Core App Functionality ---
+        function startApp() {
+            // Step 1: Hide splash screen smoothly
+            const splash = document.getElementById('splash-screen');
+            const main = document.getElementById('main-content');
+
+            splash.style.opacity = '0';
+            setTimeout(() => {
+                splash.classList.add('hidden');
+                // Step 2: Show main content
+                main.classList.remove('hidden');
+                
+                // Step 3: Switch to the initial tab
+                switchTab('concepts');
+            }, 700);
+            
+            // Set initial theme color
+            setAccentColor('indigo'); 
+        }
+
+        // ROBUST switchTab FUNCTION using pure class manipulation
         function switchTab(tabId) {
-            // 1. Hide all views and reset animation class
+            // 1. Handle Views
             document.querySelectorAll('.view-section').forEach(el => {
                 el.classList.add('hidden');
-                el.classList.remove('slide-in'); // Ensure animation resets properly
+                el.classList.remove('slide-in');
             });
+            const targetView = document.getElementById(`view-${tabId}`);
+            if (targetView) {
+                targetView.classList.remove('hidden');
+                targetView.classList.add('slide-in');
+            }
             
-            // 2. Reset navigation styles
-            document.querySelectorAll('.nav-item').forEach(el => {
+            // 2. Handle Navigation Buttons
+            document.querySelectorAll('.nav-tab-btn').forEach(el => {
                 el.classList.remove('nav-active', 'text-stone-900');
                 el.classList.add('text-stone-500');
             });
 
-            // 3. Show the target view and apply animation
-            const targetView = document.getElementById(`view-${tabId}`);
-            targetView.classList.remove('hidden');
-            // Force reflow/repaint before adding slide-in to restart animation (A common fix for transition issues)
-            void targetView.offsetWidth; 
-            targetView.classList.add('slide-in');
-            
-            // 4. Update navigation styles
             const activeBtn = document.getElementById(`nav-${tabId}`);
-            activeBtn.classList.add('nav-active', 'text-stone-900');
-            activeBtn.classList.remove('text-stone-500');
+            if (activeBtn) {
+                activeBtn.classList.add('nav-active', 'text-stone-900');
+                activeBtn.classList.remove('text-stone-500');
+            }
 
-            // 5. Handle chart resizing for the simulation tab
-            if (tabId === 'simulation' && chartInstance) {
-                // Ensure chart redraws correctly after tab switch
-                setTimeout(() => chartInstance.resize(), 100);
+            // 3. Handle Chart Initialization/Resizing
+            if (tabId === 'simulation') {
+                if (!chartInstance) {
+                    initChart();
+                } else {
+                    // Use requestAnimationFrame for reliable resizing after the element is visible
+                    requestAnimationFrame(() => chartInstance.resize());
+                }
             }
         }
 
         function consumeUnit() {
+            // Check if the chart is initialized and data exists
+            if (!chartInstance) {
+                 showMessageBox("ত্রুটি", "চার্ট শুরু হয়নি। সিমুলেশন ট্যাবে গিয়ে আবার চেষ্টা করুন।");
+                 return;
+            }
+            
             if (currentStep >= utilitySchedule.length - 1) {
-                // Use a custom message box instead of alert()
                 showMessageBox("সিমুলেশন শেষ!", "আপনি অ-উপযোগ পর্যায়ে পৌঁছে গেছেন। আবার শুরু করতে 'রিসেট' চাপুন।");
                 return;
             }
@@ -568,13 +586,17 @@
 
             document.getElementById('schedule-body').innerHTML = '<tr class="text-stone-400 italic"><td class="p-4" colspan="4">এখনও কোনো ডেটা নেই...</td></tr>';
 
-            chartInstance.data.labels = [0];
-            chartInstance.data.datasets[0].data = [0];
-            chartInstance.data.datasets[1].data = [null];
-            chartInstance.update();
+            // Re-initialize chart data if it exists
+            if (chartInstance) {
+                chartInstance.data.labels = [0];
+                chartInstance.data.datasets[0].data = [0];
+                chartInstance.data.datasets[1].data = [null];
+                chartInstance.update();
+            }
             hideMessageBox(); // Clear any previous message box
         }
-
+        
+        // ... (updateDOM, updateTable, updateChart, checkStatus functions remain the same)
         function updateDOM(data) {
             document.getElementById('stat-q').innerText = data.q;
             document.getElementById('stat-tu').innerText = data.tu;
@@ -623,14 +645,17 @@
             
             tbody.appendChild(row);
             
+            // Remove pulse after 1 second for subtle animation
             setTimeout(() => row.classList.remove('animate-pulse'), 1000);
         }
 
         function updateChart(data) {
-            chartInstance.data.labels.push(data.q);
-            chartInstance.data.datasets[0].data.push(data.tu);
-            chartInstance.data.datasets[1].data.push(data.mu);
-            chartInstance.update();
+            if (chartInstance) {
+                chartInstance.data.labels.push(data.q);
+                chartInstance.data.datasets[0].data.push(data.tu);
+                chartInstance.data.datasets[1].data.push(data.mu);
+                chartInstance.update();
+            }
         }
 
         function checkStatus(data) {
@@ -644,6 +669,7 @@
                 statusEl.innerHTML = "⚠️ <strong>সতর্কতা!</strong> অ-উপযোগ শুরু হয়েছে। মোট উপযোগ কমছে।";
                 statusEl.className = "mt-4 p-3 bg-rose-100 text-rose-800 rounded-lg text-sm text-center border border-rose-200";
                 
+                // Disable the consume button
                 btn.disabled = true;
                 btn.classList.add('opacity-50', 'cursor-not-allowed');
                 btn.innerHTML = "❌ আর সম্ভব নয়";
@@ -652,6 +678,7 @@
                 statusEl.className = "mt-4 p-3 bg-stone-100 text-stone-600 rounded-lg text-sm text-center border border-stone-200";
             }
         }
+        // ... (end of data update functions)
 
         // --- Custom Message Box Logic (Replaces alert()) ---
         function showMessageBox(title, message) {
@@ -659,11 +686,13 @@
             modal.id = 'message-box-modal';
             modal.className = 'fixed inset-0 bg-black bg-opacity-70 z-[2000] flex items-center justify-center p-4 transition-opacity duration-300';
             
+            const primaryColor = root.style.getPropertyValue('--primary-color') || colors.indigo.primary;
+
             modal.innerHTML = `
                 <div class="bg-white p-6 rounded-xl shadow-2xl w-full max-w-sm transform transition-transform duration-300 scale-100">
                     <h3 class="text-xl font-bold text-stone-800 mb-3">${title}</h3>
                     <p class="text-stone-600 mb-5">${message}</p>
-                    <button onclick="hideMessageBox()" class="w-full bg-primary-color hover:bg-primary-dark text-white font-semibold py-2 rounded-lg transition-colors">
+                    <button onclick="hideMessageBox()" style="background-color: ${primaryColor};" class="w-full hover:bg-opacity-90 text-white font-semibold py-2 rounded-lg transition-colors">
                         বুঝেছি
                     </button>
                 </div>
@@ -695,25 +724,13 @@
             root.style.setProperty('--primary-light', color.light);
             root.style.setProperty('--primary-dark', color.dark);
             
-            const checks = ['check-indigo', 'check-green', 'check-red'];
-            checks.forEach(id => document.getElementById(id).classList.add('hidden'));
+            // Update checkmark visibility
+            document.querySelectorAll('.color-select-btn span').forEach(span => span.classList.add('hidden'));
             document.getElementById(`check-${colorName}`).classList.remove('hidden');
 
             if (chartInstance) {
                 chartInstance.data.datasets[0].borderColor = color.primary;
                 chartInstance.update();
-            }
-
-            document.querySelectorAll('.text-primary-color').forEach(el => el.style.color = color.primary);
-            document.querySelectorAll('.bg-primary-color').forEach(el => el.style.backgroundColor = color.primary);
-            document.querySelectorAll('.bg-primary-light').forEach(el => el.style.backgroundColor = color.light);
-            document.querySelectorAll('.border-primary-color').forEach(el => el.style.borderColor = color.primary);
-
-            // Re-apply nav-active style with new color
-            const activeNav = document.querySelector('.nav-active');
-            if (activeNav) {
-                activeNav.style.borderBottomColor = color.primary;
-                activeNav.style.color = color.primary;
             }
         }
 
@@ -723,13 +740,44 @@
             document.getElementById('currentFontSize').innerText = sizeInPx;
         }
 
-        // --- Initialization ---
-        window.onload = function() {
-            // Set initial color and font size display
-            setAccentColor('indigo');
-            document.getElementById('currentFontSize').innerText = document.getElementById('fontSizeSlider').value + 'px';
-        };
+        // --- Event Listener Initialization (The new robust part) ---
+        function initAppListeners() {
+            // 1. Splash Screen Button
+            document.getElementById('start-button').addEventListener('click', startApp);
+            
+            // 2. Navigation Delegation (Handles concepts, simulation, analysis)
+            const navContainer = document.getElementById('nav-container');
+            if (navContainer) {
+                navContainer.addEventListener('click', (event) => {
+                    const targetBtn = event.target.closest('.nav-tab-btn');
+                    if (targetBtn) {
+                        const tabId = targetBtn.getAttribute('data-tab');
+                        switchTab(tabId);
+                    }
+                });
+            }
+            
+            // 3. Simulation Control Buttons
+            document.getElementById('btn-consume').addEventListener('click', consumeUnit);
+            document.getElementById('btn-reset').addEventListener('click', resetSimulation);
+            document.getElementById('go-to-simulation-btn').addEventListener('click', () => switchTab('simulation'));
+            
+            // 4. Settings Buttons
+            document.getElementById('settings-button').addEventListener('click', openSettings);
+            
+            document.querySelectorAll('.color-select-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    setAccentColor(btn.getAttribute('data-color'));
+                });
+            });
 
+            // 5. Initial Setup
+            setAccentColor('indigo');
+            adjustFontSize(document.getElementById('fontSizeSlider').value);
+        }
+
+        // Execute initialization when the window loads
+        window.onload = initAppListeners;
     </script>
 </body>
 </html>
